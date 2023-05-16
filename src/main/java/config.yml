@@ -1,0 +1,21 @@
+# The hour you want it to reset daily (HH:mm)
+Date: "12:00"
+bypass-permission: "bingo.bypass"
+
+Item:
+   name: "&e&lBİNGO!"
+   lore:
+     - "&7Eşyaları &bdikey, yatay"
+     - "&bve çarpraz&7 elde et,"
+     - "&7bu kağıdı ödüle çevir!"
+     - ""
+     - "&eSaat 12 de sonlanır."
+     - ""
+     - "&fÖdüller:"
+     - "&8- &ex16 Zümrüt"
+     - ""
+     - "♦ &cAlmak için &8(Sağ tıkla)"
+   
+Messages:
+   1: "ALREADY EXISTING BINGO BOARD ITEM"
+   2: "INVENTORY IS FULL."

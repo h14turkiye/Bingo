@@ -1,0 +1,10 @@
+name: Bingo
+description: A solution to economy, but fun.
+version: 0.1.1
+main: com.h14turkiye.bingo.Bingo
+author: h14turkiye
+api-version: 1.13
+commands:
+  bingo:
+    description: gets board item
+    permission: bingo.itemstack
