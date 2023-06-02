@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Locale;
 
 import javax.imageio.ImageIO;
 
@@ -29,7 +30,6 @@ public class BoardRenderer extends MapRenderer {
     private final BingoGame game;
     private final Image[] images;
     HashMap<BingoPlayer, Integer> renderedItems = new HashMap<>();
-    private Image finished;
 
     public BoardRenderer(Bingo plugin, BingoGame game) {
         this.game = game;
@@ -55,7 +55,6 @@ public class BoardRenderer extends MapRenderer {
         drawGrid(canvas);
         drawImages(canvas, bingoPlayer);
         renderedItems.put(bingoPlayer, foundItems);
-        drawTransparentImage(canvas, toBufferedImage(finished), 0, 0);
     }
 
     private void drawImages(MapCanvas canvas, BingoPlayer bingoPlayer) {
@@ -96,7 +95,7 @@ public class BoardRenderer extends MapRenderer {
 
         for (int i = 0; i < images.length; i++) {
         	if (bingoPlayer.getBoard().getItems()[i].isFound()) {
-                drawRect(canvas, new Color(MapPalette.matchColor(0, 162, 56)), imagePositions[i][0]-3, imagePositions[i][0]-3 + 22, imagePositions[i][1]-3, imagePositions[i][1]-3+22);
+        		drawRect(canvas, MapPalette.matchColor(0, 162, 56), imagePositions[i][0]-3, imagePositions[i][0]-3 + 22, imagePositions[i][1]-3, imagePositions[i][1]-3+22);
                 
             }
             drawTransparentImage(canvas, toBufferedImage(images[i]), imagePositions[i][0], imagePositions[i][1]);
@@ -129,9 +128,9 @@ public class BoardRenderer extends MapRenderer {
                     int cGreen = (cOrg.getGreen() * cOrg.getAlpha() + cPalette.getGreen() * (255 - cOrg.getAlpha())) / 255;
                     int cBlue = (cOrg.getBlue() * cOrg.getAlpha() + cPalette.getBlue() * (255 - cOrg.getAlpha())) / 255;
 
-                    final Color cFinal = new Color(MapPalette.matchColor(cRed, cGreen, cBlue));
-                   
-                    canvas.setPixelColor(posX + x, posY + y, cFinal);
+                    final byte cFinal = MapPalette.matchColor(cRed, cGreen, cBlue);
+                    
+                    canvas.setPixel(posX + x, posY + y, cFinal);
 
                 }
             }
@@ -169,7 +168,7 @@ public class BoardRenderer extends MapRenderer {
 
     private void drawGrid(MapCanvas canvas) {
         int width = 2;
-        Color color = Color.WHITE;
+        byte color = MapPalette.matchColor(Color.WHITE);
         
         //outer line not tested
         drawRect(canvas, color, 0, 0 + 5, 0, 128); // left
@@ -190,10 +189,10 @@ public class BoardRenderer extends MapRenderer {
         drawRect(canvas, color, 0, 128, 99, 99 + width);
     }
 
-    private void drawRect(MapCanvas canvas, Color color, int fromX, int toX, int fromY, int toY) {
+    private void drawRect(MapCanvas canvas, byte color, int fromX, int toX, int fromY, int toY) {
         for (int x = fromX; x < toX; x++) {
             for (int y = fromY; y < toY; y++) {
-                canvas.setPixelColor(x, y, color);
+                canvas.setPixel(x, y, color);
             }
         }
     }
@@ -202,7 +201,7 @@ public class BoardRenderer extends MapRenderer {
     public void updateImages() {
         try {
             for (int i = 0; i < game.getItems().length; i++) {
-            	File file = new File(plugin.getDataFolder(), "assets/textures/" + game.getItems()[i].toString() + ".png");
+            	File file = new File(plugin.getDataFolder(), "assets/textures/" + game.getItems()[i].toString().toLowerCase(Locale.ROOT) + ".png");
                 InputStream stream = new FileInputStream(file);
                 images[i] = ImageIO.read(stream);
             }

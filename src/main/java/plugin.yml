@@ -4,6 +4,7 @@ version: 0.1.1
 main: com.h14turkiye.bingo.Bingo
 author: h14turkiye
 api-version: 1.13
+folia-supported: true
 commands:
   bingo:
     description: gets board item

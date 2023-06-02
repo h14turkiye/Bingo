@@ -18,33 +18,32 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import com.h14turkiye.bingo.Bingo;
 import com.h14turkiye.bingo.game.board.BingoBoard;
 import com.h14turkiye.bingo.game.board.BingoItem;
 import com.h14turkiye.bingo.game.board.map.BoardRenderer;
+import com.h14turkiye.bingo.util.SchedulerUtil;
 
 public class BingoGame {
 
 	private Map<UUID, BingoPlayer> bingoPlayers = new HashMap<>();
 	private Bingo plugin;
-	private BukkitTask loop;
 	Material[] items = new Material[25];
 	private BoardRenderer renderer;
 
 	public BingoGame(Bingo plugin) {
 		this.plugin = plugin;
 		createBoard();
-		
-		checkCompletion();
+		resetBoardTimer();
+
+		checkCompletionTimer();
 	}
 
 	public BingoPlayer getBingoPlayer(Player player) {
 		return bingoPlayers.getOrDefault(player.getUniqueId(), null);
 	}
-	
+
 	public BingoPlayer getBingoPlayer(UUID uuid) {
 		return bingoPlayers.getOrDefault(uuid, null);
 	}
@@ -52,11 +51,11 @@ public class BingoGame {
 	public void addBingoPlayer(UUID uuid) {
 		bingoPlayers.put(uuid, new BingoPlayer(uuid, new BingoBoard(items)));
 	}
-	
+
 	public void removeBingoPlayer(UUID uuid) {
 		bingoPlayers.remove(uuid);
 	}
-	
+
 	public Collection<UUID> getUUIDS() {
 		return bingoPlayers.keySet();
 	}
@@ -85,29 +84,28 @@ public class BingoGame {
 		}
 
 		renderer = new BoardRenderer(plugin, this);
-		getRenderer().updateImages();
+		renderer.updateImages();
 	}
-	
+
 	public ItemStack getRenderedBingoBoardItemStack() {
 		FileConfiguration config = plugin.getConfig();
-        ItemStack itemStack = new ItemStack(Material.FILLED_MAP);
-        MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0));
-        
-        for (MapRenderer ren : view.getRenderers())
-            view.removeRenderer(ren);
+		ItemStack itemStack = new ItemStack(Material.FILLED_MAP);
+		MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0));
 
-        view.addRenderer(renderer);
-        MapMeta mapMeta = (MapMeta) itemStack.getItemMeta();
-        mapMeta.setMapView(view);
-        mapMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', config.getString("Item.name")));
-        mapMeta.setLore(com.h14turkiye.bingo.util.ChatColor.translateAlternateColorCodes('&',config.getStringList("Item.lore")));
-        itemStack.setItemMeta(mapMeta);
-        return itemStack;
-    }
+		for (MapRenderer ren : view.getRenderers())
+			view.removeRenderer(ren);
 
-	public void checkCompletion() {
+		view.addRenderer(renderer);
+		MapMeta mapMeta = (MapMeta) itemStack.getItemMeta();
+		mapMeta.setMapView(view);
+		mapMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', config.getString("Item.name")));
+		mapMeta.setLore(com.h14turkiye.bingo.util.ChatColor.translateAlternateColorCodes('&',config.getStringList("Item.lore")));
+		itemStack.setItemMeta(mapMeta);
+		return itemStack;
+	}
 
-		loop = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
+	public void checkCompletionTimer() {
+		SchedulerUtil.runTaskTimer(plugin, () -> {
 			for(BingoPlayer bingoPlayer : getBingoPlayers()) {
 				Player player = Bukkit.getPlayer(bingoPlayer.getUuid());
 				if(player == null || bingoPlayer.checkWin()) {
@@ -123,25 +121,23 @@ public class BingoGame {
 					}
 				}
 			}
-		}, 0, 5);
+		}, 20, 20);
 
 	}
-	
 
-	public void runAlignedTaskTimer() {
+
+	public void resetBoardTimer() {
 		String wanted = plugin.getConfig().getString("Date"); // HH:mm
 		int wantedHour = Integer.parseInt(wanted.split(":")[0]);
 		if (wantedHour == 24) wantedHour = 0;  
 		int wantedMinute = Integer.parseInt(wanted.split(":")[1]);
-		plugin.getAlignedScheduler().runTaskTimer(plugin, new BukkitRunnable() {
-			@Override
-			public void run() {
-				// Resetting the board
-				bingoPlayers.clear();
-				createBoard();
-				
-			}
-		}, wantedMinute, wantedHour, 1000L * 60 * 60 * 24);
+		SchedulerUtil.runTaskTimer(plugin, () ->
+		{
+			// Resetting the board
+			bingoPlayers.clear();
+			createBoard();
+
+		}, SchedulerUtil.getDelayRequired(wantedHour, wantedMinute), 1000L * 60 * 60 * 24);
 	}
 
 	public Material getRandomMaterial() {

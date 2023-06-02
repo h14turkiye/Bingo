@@ -17,7 +17,6 @@ public class GetBoard implements CommandExecutor {
 
     public GetBoard(Bingo plugin) {
         this.plugin = plugin;
-        
     }
 
     @Override
@@ -26,7 +25,7 @@ public class GetBoard implements CommandExecutor {
 		BingoGame game = plugin.getGame();
         if(!(sender instanceof Player))return false;
         Player player = (Player) sender;
-        if(game.getUUIDS().contains(player.getUniqueId()) && !player.hasPermission(plugin.getConfig().getString("bypass-permission"))){
+        if(!player.hasPermission(plugin.getConfig().getString("bypass-permission")) && game.getUUIDS().contains(player.getUniqueId())){
         	player.sendMessage(config.getString("Messages.1"));
         	return false;
         }
